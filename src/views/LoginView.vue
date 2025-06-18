@@ -95,13 +95,13 @@
 import { ref, reactive } from 'vue';
 import { useRouter } from 'vue-router';
 import axios from 'axios';
-import { mapActions } from 'pinia';
 import useToastMessageStore from '@/stores/toastMessage';
 import ToastMessages from '@/components/ToastMessages.vue';
 
 const { VITE_API_URL } = import.meta.env;
 
 const router = useRouter();
+const toastMessageStore = useToastMessageStore();
 
 const displayEmail = ref('example@gmail.com');
 const user = reactive({
@@ -110,7 +110,7 @@ const user = reactive({
 });
 const isLoading = ref(false);
 
-const { addMessage } = mapActions(useToastMessageStore, ['addMessage']);
+const { addMessage } = toastMessageStore;
 
 async function login() {
   isLoading.value = true;
