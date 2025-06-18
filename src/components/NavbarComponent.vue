@@ -58,32 +58,32 @@
   </nav>
 </template>
 
-<script>
-import { mapActions, mapState } from 'pinia';
+<script setup>
+import { ref, onMounted } from 'vue';
+import { storeToRefs } from 'pinia';
 import * as bootstrap from 'bootstrap';
 
 import useCartStore from '@/stores/cartStore';
 
-export default {
-  computed: {
-    ...mapState(useCartStore, ['carts']),
-  },
-  methods: {
-    ...mapActions(useCartStore, ['getCart']),
-    closeNavbar() {
-      const collapseElement = this.$refs.navbarCollapse;
-      if (collapseElement.classList.contains('show')) {
-        const bsCollapse = bootstrap.Collapse.getInstance(collapseElement);
-        if (bsCollapse) {
-          bsCollapse.hide();
-        }
-      }
-    },
-  },
-  mounted() {
-    this.getCart();
-  },
-};
+const navbarCollapse = ref(null);
+
+const cartStore = useCartStore();
+const { carts } = storeToRefs(cartStore);
+const { getCart } = cartStore;
+
+function closeNavbar() {
+  const collapseElement = navbarCollapse.value;
+  if (collapseElement && collapseElement.classList.contains('show')) {
+    const bsCollapse = bootstrap.Collapse.getInstance(collapseElement);
+    if (bsCollapse) {
+      bsCollapse.hide();
+    }
+  }
+}
+
+onMounted(() => {
+  getCart();
+});
 </script>
 
 <style scoped>

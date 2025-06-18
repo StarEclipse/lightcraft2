@@ -6,7 +6,7 @@
     role="dialog"
     aria-labelledby="exampleModalLabel"
     aria-hidden="true"
-    ref="modal"
+    ref="modalRef"
   >
     <div class="modal-dialog modal-xl" role="document">
       <div class="modal-content border-0">
@@ -138,33 +138,31 @@
   </div>
 </template>
 
-<script>
-import modalMixin from '@/mixins/modalMixin';
+<script setup>
+import { ref, watch } from 'vue';
+import useModal from '@/composables/useModal';
 
-export default {
-  props: {
-    order: {
-      type: Object,
-      default() {
-        return {
-        };
-      },
-    },
+const props = defineProps({
+  order: {
+    type: Object,
+    default: () => ({}),
   },
-  data() {
-    return {
-      status: {},
-      modal: '',
-      tempOrder: {},
-      isPaid: false,
-    };
+});
+
+defineEmits(['update-paid']);
+
+const modalRef = ref(null);
+const { openModal, closeModal } = useModal(modalRef);
+
+const tempOrder = ref({});
+
+watch(
+  () => props.order,
+  () => {
+    tempOrder.value = props.order;
   },
-  emits: ['update-paid'],
-  mixins: [modalMixin],
-  watch: {
-    order() {
-      this.tempOrder = this.order;
-    },
-  },
-};
+  { immediate: true },
+);
+
+defineExpose({ openModal, closeModal });
 </script>

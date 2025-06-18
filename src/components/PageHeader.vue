@@ -10,58 +10,47 @@
   </div>
 </template>
 
-<script>
-export default {
-  name: 'PageHeader',
-  props: {
-    icon: {
-      type: String,
-      required: true,
-    },
-    iconColor: {
-      type: String,
-      default: 'text-warning',
-    },
-    title: {
-      type: String,
-      required: true,
-    },
-    subtitle: {
-      type: String,
-      required: true,
-    },
-    variant: {
-      type: String,
-      default: 'default', // 'default' 或 'dashboard'
-    },
+<script setup>
+import { computed } from 'vue';
+
+const props = defineProps({
+  icon: {
+    type: String,
+    required: true,
   },
-  computed: {
-    wrapperClass() {
-      if (this.variant === 'dashboard') {
-        return 'dashboard-header';
-      }
-      return 'd-flex justify-content-between align-items-center mb-4';
-    },
-    containerClass() {
-      if (this.variant === 'dashboard') {
-        return 'container-fluid';
-      }
-      return '';
-    },
-    titleClass() {
-      if (this.variant === 'dashboard') {
-        return 'dashboard-title';
-      }
-      return 'h3 mb-1 text-dark fw-bold';
-    },
-    subtitleClass() {
-      if (this.variant === 'dashboard') {
-        return 'dashboard-subtitle';
-      }
-      return 'text-muted mb-0';
-    },
+  iconColor: {
+    type: String,
+    default: 'text-warning',
   },
-};
+  title: {
+    type: String,
+    required: true,
+  },
+  subtitle: {
+    type: String,
+    required: true,
+  },
+  variant: {
+    type: String,
+    default: 'default',
+  },
+});
+
+const wrapperClass = computed(() => (props.variant === 'dashboard'
+  ? 'dashboard-header'
+  : 'd-flex justify-content-between align-items-center mb-4'));
+
+const containerClass = computed(() => (props.variant === 'dashboard'
+  ? 'container-fluid'
+  : ''));
+
+const titleClass = computed(() => (props.variant === 'dashboard'
+  ? 'dashboard-title'
+  : 'h3 mb-1 text-dark fw-bold'));
+
+const subtitleClass = computed(() => (props.variant === 'dashboard'
+  ? 'dashboard-subtitle'
+  : 'text-muted mb-0'));
 </script>
 
 <style scoped>

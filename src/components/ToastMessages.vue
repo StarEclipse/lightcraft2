@@ -38,18 +38,13 @@
   </div>
 </template>
 
-<script>
-import { mapState, mapActions } from 'pinia';
+<script setup>
+import { storeToRefs } from 'pinia';
 import useToastMessageStore from '@/stores/toastMessage';
 
-export default {
-  computed: {
-    ...mapState(useToastMessageStore, ['messages']),
-  },
-  methods: {
-    ...mapActions(useToastMessageStore, ['removeMessage']),
-  },
-};
+const toastStore = useToastMessageStore();
+const { messages } = storeToRefs(toastStore);
+const { removeMessage } = toastStore;
 </script>
 
 <style>

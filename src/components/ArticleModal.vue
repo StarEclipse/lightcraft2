@@ -75,7 +75,7 @@
                   type="date"
                   class="form-control"
                   id="create_at"
-                  v-model="create_at"
+                  v-model="createAt"
                 />
               </div>
             </div>
@@ -106,7 +106,7 @@
                 </div>
                 <div
                   class="col-md-2 mb-1"
-                  v-if="tempArticle.tag[this.tagLength - 1] || !this.tagLength"
+                  v-if="tempArticle.tag[tagLength - 1] || !tagLength"
                 >
                   <button
                     class="btn btn-outline-primary btn-sm d-block w-100"
@@ -162,7 +162,7 @@
           <button
             type="button"
             class="btn btn-primary"
-            @click="$emit('update-article', tempArticle)"
+            @click="emit('update-article', tempArticle)"
           >
             確認
           </button>
@@ -171,79 +171,84 @@
     </div>
   </div>
 </template>
-<script>
-import modalMixin from '@/mixins/modalMixin';
+<script setup>
+import {
+  ref,
+  reactive,
+  watch,
+  computed,
+} from 'vue';
+import axios from 'axios';
 import { mapActions } from 'pinia';
 import useToastMessageStore from '@/stores/toastMessage';
 import ClassicEditor from '@ckeditor/ckeditor5-build-classic';
+import useModal from '@/composables/useModal';
 
 const { VITE_API_URL, VITE_API_PATH } = import.meta.env;
-export default {
-  props: {
-    article: Object,
-    isNew: Boolean,
-  },
-  emits: ['update-article'],
-  data() {
-    return {
-      modal: '',
-      tempArticle: {
-        tag: [''],
-      },
-      create_at: 0,
-      editor: ClassicEditor,
-      editorConfig: {
-        toolbar: ['heading', '|', 'bold', 'italic', 'link'],
-      },
-    };
-  },
-  mixins: [modalMixin],
-  methods: {
-    ...mapActions(useToastMessageStore, ['addMessage']),
-    upLoadFile() {
-      const upLoadFile = this.$refs.fileInput.files[0];
-      const formData = new FormData();
-      formData.append('file-to-upload', upLoadFile);
-      const url = `${VITE_API_URL}/api/${VITE_API_PATH}/admin/upload`;
-      this.axios.post(url, formData)
-        .then((res) => {
-          this.tempArticle.image = res.data.imageUrl;
-          this.$refs.fileInput.value = '';
-          this.addMessage({
-            title: '圖片上傳結果',
-            content: res.data.message,
-            style: 'success',
-          });
-        })
-        .catch((err) => {
-          this.addMessage({
-            title: '圖片上傳結果',
-            content: err.response.data.message,
-            style: 'danger',
-          });
-        });
-    },
-  },
-  watch: {
-    article() {
-      this.tempArticle = {
-        ...this.article,
-        tag: this.article.tag || [],
-        create_at: this.article.create_at || 0,
-      };
-      [this.create_at] = new Date(this.tempArticle.create_at * 1000).toISOString().split('T');
-    },
-    create_at() {
-      this.tempArticle.create_at = new Date(this.create_at).getTime() / 1000;
-    },
-  },
-  computed: {
-    tagLength() {
-      return this.tempArticle.tag.length;
-    },
-  },
 
+const props = defineProps({
+  article: Object,
+  isNew: Boolean,
+});
+
+const emit = defineEmits(['update-article']);
+
+const modal = ref(null);
+const fileInput = ref(null);
+const { openModal, closeModal } = useModal(modal);
+defineExpose({ openModal, closeModal });
+
+const tempArticle = reactive({ tag: [''] });
+const createAt = ref(0);
+const editor = ClassicEditor;
+const editorConfig = {
+  toolbar: ['heading', '|', 'bold', 'italic', 'link'],
 };
+
+const { addMessage } = mapActions(useToastMessageStore, ['addMessage']);
+
+function upLoadFile() {
+  const selectedFile = fileInput.value?.files[0];
+  if (!selectedFile) return;
+  const formData = new FormData();
+  formData.append('file-to-upload', selectedFile);
+  const url = `${VITE_API_URL}/api/${VITE_API_PATH}/admin/upload`;
+  axios
+    .post(url, formData)
+    .then((res) => {
+      tempArticle.image = res.data.imageUrl;
+      if (fileInput.value) fileInput.value.value = '';
+      addMessage({
+        title: '圖片上傳結果',
+        content: res.data.message,
+        style: 'success',
+      });
+    })
+    .catch((err) => {
+      addMessage({
+        title: '圖片上傳結果',
+        content: err.response.data.message,
+        style: 'danger',
+      });
+    });
+}
+
+watch(
+  () => props.article,
+  () => {
+    Object.assign(tempArticle, props.article);
+    tempArticle.tag = props.article.tag || [];
+    tempArticle.create_at = props.article.create_at || 0;
+    [createAt.value] = new Date(tempArticle.create_at * 1000).toISOString().split('T');
+  },
+  { immediate: true },
+);
+
+watch(createAt, () => {
+  tempArticle.create_at = new Date(createAt.value).getTime() / 1000;
+});
+
+const tagLength = computed(() => tempArticle.tag.length);
 </script>
 <style>
 .ck-editor__editable_inline {
