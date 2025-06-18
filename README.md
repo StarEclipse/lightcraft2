@@ -98,20 +98,17 @@ npm install
 
 ### 3. 設定環境變數
 
-將 `.env.example` 檔案複製一份並重新命名為 `.env`。此檔案用於存放 API 路徑等環境變數。
-
-```bash
-cp .env.example .env
-```
-
-接著，請修改 `.env` 檔案中的內容：
+專案中沒有提供 `.env.example`，請在專案根目錄自行建立 `.env` 檔案，並填入下列內容：
 
 ```env
 # API 伺服器路徑 (請填寫實際 API URL)
-VITE_API_URL=https://your-api-server.com/api
+VITE_APP_URL=https://your-api-server.com/v2
 
 # 您的 API Path (請填寫實際 API Path)
-VITE_API_PATH=your-api-path
+VITE_APP_PATH=your-api-path
+
+# (可選) 部署至 GitHub Pages 時的儲存庫名稱
+REPOSITORY_NAME=your-repo-name
 ```
 
 ### 4. 啟動開發伺服器
