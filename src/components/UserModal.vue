@@ -77,36 +77,23 @@
     </div>
   </div>
 </template>
-<script>
-import { Modal } from 'bootstrap';
+<script setup>
+import { ref, watch } from 'vue';
+import useModal from '@/composables/useModal';
 
-export default {
-  props: ['product'],
-  data() {
-    return {
-      status: {},
-      productModal: '',
-      qty: 1,
-    };
+const props = defineProps({
+  product: Object,
+});
+
+const qty = ref(1);
+const modal = ref(null);
+const { openModal, closeModal } = useModal(modal);
+defineExpose({ openModal, closeModal });
+
+watch(
+  () => props.product,
+  () => {
+    qty.value = 1;
   },
-  mounted() {
-    this.productModal = new Modal(this.$refs.modal, {
-      keyboard: false,
-      backdrop: 'static',
-    });
-  },
-  methods: {
-    openModal() {
-      this.productModal.show();
-    },
-    hideModal() {
-      this.productModal.hide();
-    },
-  },
-  watch: {
-    product() {
-      this.qty = 1;
-    },
-  },
-};
+);
 </script>
