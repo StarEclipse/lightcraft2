@@ -8,7 +8,7 @@
     tabindex="-1"
     aria-labelledby="staticBackdropLabel"
     aria-hidden="true"
-    ref="modal"
+    ref="modalRef"
   >
     <div class="modal-dialog">
       <div class="modal-content ">
@@ -102,31 +102,37 @@
     </div>
   </div>
 </template>
-<script>
-import modalMixin from '@/mixins/modalMixin';
 
-export default {
-  props: {
-    coupon: Object,
-    isNew: Boolean,
+<script setup>
+import { ref, watch } from 'vue';
+import useModal from '@/composables/useModal';
+
+const props = defineProps({
+  coupon: Object,
+  isNew: Boolean,
+});
+
+defineEmits(['update-coupon']);
+
+const modalRef = ref(null);
+const { openModal, closeModal } = useModal(modalRef);
+
+const tempCoupon = ref({});
+const dueDate = ref('');
+
+watch(dueDate, () => {
+  tempCoupon.value.due_date = Math.floor(new Date(dueDate.value) / 1000);
+});
+
+watch(
+  () => props.coupon,
+  (val) => {
+    tempCoupon.value = val;
+    const dateAndTime = new Date(val.due_date * 1000).toISOString().split('T');
+    [dueDate.value] = dateAndTime;
   },
-  data() {
-    return {
-      tempCoupon: {},
-      due_date: '',
-    };
-  },
-  emits: ['update-coupon'],
-  watch: {
-    due_date() {
-      this.tempCoupon.due_date = Math.floor(new Date(this.due_date) / 1000);
-    },
-    coupon() {
-      this.tempCoupon = this.coupon;
-      const dateAndTime = new Date(this.tempCoupon.due_date * 1000).toISOString().split('T');
-      [this.due_date] = dateAndTime;
-    },
-  },
-  mixins: [modalMixin],
-};
+  { immediate: true },
+);
+
+defineExpose({ openModal, closeModal });
 </script>

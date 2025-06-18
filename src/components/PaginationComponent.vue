@@ -49,52 +49,50 @@
   </nav>
 </template>
 
-<script>
-export default {
-  name: 'PaginationComponent',
-  emits: ['change-page'],
-  props: {
-    pagination: {
-      type: Object,
-      required: true,
-      default: () => ({
-        total_pages: 1,
-        current_page: 1,
-        has_pre: false,
-        has_next: false,
-      }),
-    },
-    ariaLabel: {
-      type: String,
-      default: '分頁導航',
-    },
-  },
-  computed: {
-    displayPages() {
-      const pages = [];
-      const totalPages = this.pagination.total_pages;
-      const currentPage = this.pagination.current_page;
+<script setup>
+import { computed } from 'vue';
 
-      for (let i = 1; i <= totalPages; i += 1) {
-        if (
-          i === 1
-          || i === totalPages
-          || (i >= currentPage - 2 && i <= currentPage + 2)
-        ) {
-          pages.push(i);
-        }
-      }
-      return pages;
-    },
+const props = defineProps({
+  pagination: {
+    type: Object,
+    required: true,
+    default: () => ({
+      total_pages: 1,
+      current_page: 1,
+      has_pre: false,
+      has_next: false,
+    }),
   },
-  methods: {
-    changePage(page) {
-      if (page >= 1 && page <= this.pagination.total_pages) {
-        this.$emit('change-page', page);
-      }
-    },
+  ariaLabel: {
+    type: String,
+    default: '分頁導航',
   },
-};
+});
+
+const emit = defineEmits(['change-page']);
+
+const displayPages = computed(() => {
+  const pages = [];
+  const totalPages = props.pagination.total_pages;
+  const currentPage = props.pagination.current_page;
+
+  for (let i = 1; i <= totalPages; i += 1) {
+    if (
+      i === 1
+      || i === totalPages
+      || (i >= currentPage - 2 && i <= currentPage + 2)
+    ) {
+      pages.push(i);
+    }
+  }
+  return pages;
+});
+
+function changePage(page) {
+  if (page >= 1 && page <= props.pagination.total_pages) {
+    emit('change-page', page);
+  }
+}
 </script>
 
 <style scoped>

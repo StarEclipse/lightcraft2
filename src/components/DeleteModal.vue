@@ -41,61 +41,44 @@
     </div>
   </div>
 </template>
-<script>
+<script setup>
+import { ref } from 'vue';
 import axios from 'axios';
-import { mapActions } from 'pinia';
+import useModal from '@/composables/useModal';
 import useToastMessageStore from '@/stores/toastMessage';
-import { Modal } from 'bootstrap';
 
 const { VITE_API_URL, VITE_API_PATH } = import.meta.env;
-export default {
-  data() {
-    return {
-      delProductModal: null,
-      editProduct: {},
-    };
-  },
-  props: ['tempProduct'],
-  emits: ['update'],
-  mounted() {
-    // delModal
-    this.delProductModal = new Modal(
-      document.getElementById('delProductModal'),
-      {
-        keyboard: false,
-        backdrop: 'static',
-      },
-    );
-  },
-  methods: {
-    ...mapActions(useToastMessageStore, ['addMessage']),
-    deleteProduct() {
-      axios
-        .delete(`${VITE_API_URL}/api/${VITE_API_PATH}/admin/product/${this.tempProduct.id}`)
-        .then((res) => {
-          // console.log(res.data);
-          this.addMessage({
-            title: '成功刪除產品',
-            content: res.data.message,
-            style: 'success',
-          });
-          this.closeModal();
-          this.$emit('update');
-        })
-        .catch((err) => {
-          this.addMessage({
-            title: '刪除產品失敗',
-            content: err.response.data.message,
-            style: 'danger',
-          });
-        });
-    },
-    openModal() {
-      this.delProductModal.show();
-    },
-    closeModal() {
-      this.delProductModal.hide();
-    },
-  },
-};
+
+const props = defineProps({
+  tempProduct: Object,
+});
+
+const emit = defineEmits(['update']);
+
+const modal = ref(null);
+const { openModal, closeModal } = useModal(modal);
+defineExpose({ openModal, closeModal });
+
+const { addMessage } = useToastMessageStore();
+
+function deleteProduct() {
+  axios
+    .delete(`${VITE_API_URL}/api/${VITE_API_PATH}/admin/product/${props.tempProduct.id}`)
+    .then((res) => {
+      addMessage({
+        title: '成功刪除產品',
+        content: res.data.message,
+        style: 'success',
+      });
+      closeModal();
+      emit('update');
+    })
+    .catch((err) => {
+      addMessage({
+        title: '刪除產品失敗',
+        content: err.response.data.message,
+        style: 'danger',
+      });
+    });
+}
 </script>
