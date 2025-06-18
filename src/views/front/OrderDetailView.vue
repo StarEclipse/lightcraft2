@@ -309,11 +309,11 @@ export default {
         return;
       }
 
-      const { VITE_APP_URL, VITE_APP_PATH } = import.meta.env;
+      const { VITE_API_URL, VITE_API_PATH } = import.meta.env;
       this.isLoading = true;
 
       try {
-        const url = `${VITE_APP_URL}/api/${VITE_APP_PATH}/order/${orderId}`;
+        const url = `${VITE_API_URL}/api/${VITE_API_PATH}/order/${orderId}`;
         const response = await axios.get(url);
         this.order = response.data.order;
       } catch (error) {

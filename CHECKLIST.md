@@ -190,8 +190,8 @@ Vue.js 電商購物網站開發，包含產品展示、購物車管理、結帳�
    
    // ✅ 實際 API 調用
    async getOrder(orderId) {
-     const { VITE_APP_URL, VITE_APP_PATH } = import.meta.env;
-     const response = await axios.get(`${VITE_APP_URL}/api/${VITE_APP_PATH}/order/${orderId}`);
+     const { VITE_API_URL, VITE_API_PATH } = import.meta.env;
+     const response = await axios.get(`${VITE_API_URL}/api/${VITE_API_PATH}/order/${orderId}`);
      this.order = response.data.order;
    }
    ```

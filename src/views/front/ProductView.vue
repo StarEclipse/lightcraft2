@@ -354,7 +354,7 @@ import 'swiper/css/pagination';
 import useCartStore from '@/stores/cartStore';
 import useToastMessageStore from '@/stores/toastMessage';
 
-const { VITE_APP_URL, VITE_APP_PATH } = import.meta.env;
+const { VITE_API_URL, VITE_API_PATH } = import.meta.env;
 
 export default {
   components: {
@@ -434,7 +434,7 @@ export default {
       this.isProductLoading = true; // 開始載入
       this.imageLoadedCount = 0; // 重置圖片載入計數
 
-      fetch(`${VITE_APP_URL}/api/${VITE_APP_PATH}/product/${id}`)
+      fetch(`${VITE_API_URL}/api/${VITE_API_PATH}/product/${id}`)
         .then((res) => res.json())
         .then((data) => {
           this.product = data.product;
@@ -472,7 +472,7 @@ export default {
     getRelatedProducts() {
       if (!this.product.category) return;
 
-      fetch(`${VITE_APP_URL}/api/${VITE_APP_PATH}/products?category=${this.product.category}`)
+      fetch(`${VITE_API_URL}/api/${VITE_API_PATH}/products?category=${this.product.category}`)
         .then((res) => res.json())
         .then((data) => {
           // 過濾掉當前產品，只顯示其他同分類產品，最多顯示4個

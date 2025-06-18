@@ -128,7 +128,7 @@ import ProductModal from '../../components/ProductModal.vue';
 import DeleteModal from '../../components/DeleteModal.vue';
 import PaginationComponent from '../../components/PaginationComponent.vue';
 
-const { VITE_APP_URL, VITE_APP_PATH } = import.meta.env;
+const { VITE_API_URL, VITE_API_PATH } = import.meta.env;
 
 export default {
   data() {
@@ -151,7 +151,7 @@ export default {
     getProducts(page = 1) {
       this.isLoading = true;
       axios
-        .get(`${VITE_APP_URL}/api/${VITE_APP_PATH}/admin/products?page=${page}`)
+        .get(`${VITE_API_URL}/api/${VITE_API_PATH}/admin/products?page=${page}`)
         .then((res) => {
           const { products, pagination } = res.data;
           this.products = products;
@@ -185,11 +185,11 @@ export default {
     },
     updateProduct(item) {
       this.isLoading = true;
-      let url = `${VITE_APP_URL}/api/${VITE_APP_PATH}/admin/product/${this.tempProduct.id}`;
+      let url = `${VITE_API_URL}/api/${VITE_API_PATH}/admin/product/${this.tempProduct.id}`;
       let http = 'put';
 
       if (this.isNew) {
-        url = `${VITE_APP_URL}/api/${VITE_APP_PATH}/admin/product`;
+        url = `${VITE_API_URL}/api/${VITE_API_PATH}/admin/product`;
         http = 'post';
       }
       axios[http](url, { data: item })

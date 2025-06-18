@@ -47,7 +47,7 @@ import { mapActions } from 'pinia';
 import useToastMessageStore from '@/stores/toastMessage';
 import { Modal } from 'bootstrap';
 
-const { VITE_APP_URL, VITE_APP_PATH } = import.meta.env;
+const { VITE_API_URL, VITE_API_PATH } = import.meta.env;
 export default {
   data() {
     return {
@@ -71,7 +71,7 @@ export default {
     ...mapActions(useToastMessageStore, ['addMessage']),
     deleteProduct() {
       axios
-        .delete(`${VITE_APP_URL}/api/${VITE_APP_PATH}/admin/product/${this.tempProduct.id}`)
+        .delete(`${VITE_API_URL}/api/${VITE_API_PATH}/admin/product/${this.tempProduct.id}`)
         .then((res) => {
           // console.log(res.data);
           this.addMessage({

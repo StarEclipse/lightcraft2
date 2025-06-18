@@ -217,7 +217,7 @@ import { mapActions } from 'pinia';
 import PaginationComponent from '@/components/PaginationComponent.vue';
 import HeroSection from '@/components/HeroSection.vue';
 
-const { VITE_APP_URL, VITE_APP_PATH } = import.meta.env;
+const { VITE_API_URL, VITE_API_PATH } = import.meta.env;
 
 export default {
   components: {
@@ -257,7 +257,7 @@ export default {
     // 獲取所有分類
     getCategories() {
       axios
-        .get(`${VITE_APP_URL}/api/${VITE_APP_PATH}/products/all`)
+        .get(`${VITE_API_URL}/api/${VITE_API_PATH}/products/all`)
         .then((res) => {
           // 從所有產品中提取唯一的分類
           const uniqueCategories = [...new Set(res.data.products.map((product) => product.category))];
@@ -282,7 +282,7 @@ export default {
       axios
         .get(
           // eslint-disable-next-line comma-dangle
-          `${VITE_APP_URL}/api/${VITE_APP_PATH}/products?category=${category}&page=${page}`
+          `${VITE_API_URL}/api/${VITE_API_PATH}/products?category=${category}&page=${page}`
         )
         .then((res) => {
           this.products = res.data.products;

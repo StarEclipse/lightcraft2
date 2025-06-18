@@ -248,7 +248,7 @@ import PageHeader from '@/components/PageHeader.vue';
 import OrderModal from '@/components/OrderModal.vue';
 import DelModal from '@/components/DelModal.vue';
 
-const { VITE_APP_URL, VITE_APP_PATH } = import.meta.env;
+const { VITE_API_URL, VITE_API_PATH } = import.meta.env;
 
 export default {
   data() {
@@ -350,7 +350,7 @@ export default {
     },
     getOrders(currentPage = 1) {
       this.currentPage = currentPage;
-      const url = `${VITE_APP_URL}/api/${VITE_APP_PATH}/admin/orders?page=${currentPage}`;
+      const url = `${VITE_API_URL}/api/${VITE_API_PATH}/admin/orders?page=${currentPage}`;
       this.axios.get(url).then((response) => {
         this.orders = response.data.orders;
       }).catch((error) => {
@@ -379,7 +379,7 @@ export default {
     },
     updatePaid(item) {
       this.isLoading = true;
-      const url = `${VITE_APP_URL}/api/${VITE_APP_PATH}/admin/order/${item.id}`;
+      const url = `${VITE_API_URL}/api/${VITE_API_PATH}/admin/order/${item.id}`;
       const paid = {
         is_paid: item.is_paid,
       };
@@ -403,7 +403,7 @@ export default {
     },
     deleteOrder() {
       this.isLoading = true;
-      const url = `${VITE_APP_URL}/api/${VITE_APP_PATH}/admin/order/${this.tempOrder.id}`;
+      const url = `${VITE_API_URL}/api/${VITE_API_PATH}/admin/order/${this.tempOrder.id}`;
       this.axios.delete(url).then((response) => {
         this.$refs.delModal.closeModal();
         this.getOrders(this.currentPage);

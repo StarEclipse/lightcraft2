@@ -177,7 +177,7 @@ import { mapActions } from 'pinia';
 import useToastMessageStore from '@/stores/toastMessage';
 import ClassicEditor from '@ckeditor/ckeditor5-build-classic';
 
-const { VITE_APP_URL, VITE_APP_PATH } = import.meta.env;
+const { VITE_API_URL, VITE_API_PATH } = import.meta.env;
 export default {
   props: {
     article: Object,
@@ -204,7 +204,7 @@ export default {
       const upLoadFile = this.$refs.fileInput.files[0];
       const formData = new FormData();
       formData.append('file-to-upload', upLoadFile);
-      const url = `${VITE_APP_URL}/api/${VITE_APP_PATH}/admin/upload`;
+      const url = `${VITE_API_URL}/api/${VITE_API_PATH}/admin/upload`;
       this.axios.post(url, formData)
         .then((res) => {
           this.tempArticle.image = res.data.imageUrl;
