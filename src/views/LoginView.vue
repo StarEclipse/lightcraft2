@@ -97,7 +97,7 @@ import { mapActions } from 'pinia';
 import useToastMessageStore from '@/stores/toastMessage';
 import ToastMessages from '@/components/ToastMessages.vue';
 
-const { VITE_APP_URL } = import.meta.env;
+const { VITE_API_URL } = import.meta.env;
 
 export default {
   data() {
@@ -123,7 +123,7 @@ export default {
           username: this.user.username, // 實際使用 tomgx09@gmail.com
           password: this.user.password,
         };
-        const res = await axios.post(`${VITE_APP_URL}/admin/signin`, loginData);
+        const res = await axios.post(`${VITE_API_URL}/admin/signin`, loginData);
         const { token, expired } = res.data;
         document.cookie = `hexToken=${token}; expires=${new Date(expired)};`;
         this.addMessage({

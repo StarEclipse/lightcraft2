@@ -3,7 +3,7 @@ import { defineStore } from 'pinia';
 import axios from 'axios';
 import useToastMessageStore from '@/stores/toastMessage';
 
-const { VITE_APP_URL, VITE_APP_PATH } = import.meta.env;
+const { VITE_API_URL, VITE_API_PATH } = import.meta.env;
 
 export default defineStore('cart', {
   state: () => ({
@@ -15,7 +15,7 @@ export default defineStore('cart', {
     getCart() {
       const toastStore = useToastMessageStore();
       axios
-        .get(`${VITE_APP_URL}/api/${VITE_APP_PATH}/cart`)
+        .get(`${VITE_API_URL}/api/${VITE_API_PATH}/cart`)
         .then((res) => {
           const { carts, total, final_total: apiFinalTotal } = res.data.data;
 
@@ -51,7 +51,7 @@ export default defineStore('cart', {
         qty,
       };
       axios
-        .post(`${VITE_APP_URL}/api/${VITE_APP_PATH}/cart`, { data: cart })
+        .post(`${VITE_API_URL}/api/${VITE_API_PATH}/cart`, { data: cart })
         .then((res) => {
           toastStore.addMessage({
             title: '成功',
@@ -72,7 +72,7 @@ export default defineStore('cart', {
       const toastStore = useToastMessageStore();
       try {
         const res = await axios.post(
-          `${VITE_APP_URL}/api/${VITE_APP_PATH}/coupon`,
+          `${VITE_API_URL}/api/${VITE_API_PATH}/coupon`,
           {
             data: { code },
           }
@@ -104,7 +104,7 @@ export default defineStore('cart', {
       // 返回 Promise 以便組件處理加載狀態
       try {
         const res = await axios.put(
-          `${VITE_APP_URL}/api/${VITE_APP_PATH}/cart/${item.id}`,
+          `${VITE_API_URL}/api/${VITE_API_PATH}/cart/${item.id}`,
           { data }
         );
         toastStore.addMessage({
@@ -129,7 +129,7 @@ export default defineStore('cart', {
       // 返回 Promise
       try {
         const res = await axios.delete(
-          `${VITE_APP_URL}/api/${VITE_APP_PATH}/cart/${id}`
+          `${VITE_API_URL}/api/${VITE_API_PATH}/cart/${id}`
         );
         toastStore.addMessage({
           title: '成功',
@@ -153,7 +153,7 @@ export default defineStore('cart', {
       // 返回 Promise
       try {
         const res = await axios.delete(
-          `${VITE_APP_URL}/api/${VITE_APP_PATH}/carts`
+          `${VITE_API_URL}/api/${VITE_API_PATH}/carts`
         );
         toastStore.addMessage({
           title: '成功',
@@ -176,7 +176,7 @@ export default defineStore('cart', {
       const toastStore = useToastMessageStore();
       try {
         const res = await axios.post(
-          `${VITE_APP_URL}/api/${VITE_APP_PATH}/order`,
+          `${VITE_API_URL}/api/${VITE_API_PATH}/order`,
           { data: orderData } // API 期望的格式 { data: { user: {}, message: ''} }
         );
         toastStore.addMessage({
@@ -200,7 +200,7 @@ export default defineStore('cart', {
       const toastStore = useToastMessageStore();
       try {
         const res = await axios.post(
-          `${VITE_APP_URL}/api/${VITE_APP_PATH}/pay/${orderId}`
+          `${VITE_API_URL}/api/${VITE_API_PATH}/pay/${orderId}`
         );
 
         toastStore.addMessage({

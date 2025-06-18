@@ -224,7 +224,7 @@
 import { mapActions } from 'pinia';
 import useToastMessageStore from '@/stores/toastMessage';
 
-const { VITE_APP_URL, VITE_APP_PATH } = import.meta.env;
+const { VITE_API_URL, VITE_API_PATH } = import.meta.env;
 
 export default {
   data() {
@@ -237,7 +237,7 @@ export default {
   methods: {
     ...mapActions(useToastMessageStore, ['addMessage']),
     getArticle() {
-      const url = `${VITE_APP_URL}/api/${VITE_APP_PATH}/article/${this.id}`;
+      const url = `${VITE_API_URL}/api/${VITE_API_PATH}/article/${this.id}`;
       this.isLoading = true;
       this.axios.get(url)
         .then((res) => {

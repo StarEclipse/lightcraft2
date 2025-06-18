@@ -326,9 +326,9 @@ export default {
         this.isLoading = true;
         this.error = null;
 
-        const { VITE_APP_URL, VITE_APP_PATH } = import.meta.env;
+        const { VITE_API_URL, VITE_API_PATH } = import.meta.env;
         const response = await axios.get(
-          `${VITE_APP_URL}/api/${VITE_APP_PATH}/orders?page=${page}`,
+          `${VITE_API_URL}/api/${VITE_API_PATH}/orders?page=${page}`,
         );
 
         if (response.data.success) {

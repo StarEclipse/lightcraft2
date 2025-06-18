@@ -223,7 +223,7 @@ import ArticleModal from '@/components/ArticleModal.vue';
 import DelModal from '@/components/DelModal.vue';
 import PageHeader from '@/components/PageHeader.vue';
 
-const { VITE_APP_URL, VITE_APP_PATH } = import.meta.env;
+const { VITE_API_URL, VITE_API_PATH } = import.meta.env;
 
 export default {
   components: {
@@ -278,7 +278,7 @@ export default {
     getArticles(page = 1) {
       this.currentPage = page;
       this.isLoading = true;
-      const url = `${VITE_APP_URL}/api/${VITE_APP_PATH}/admin/articles?page=${page}`;
+      const url = `${VITE_API_URL}/api/${VITE_API_PATH}/admin/articles?page=${page}`;
       this.axios.get(url).then((res) => {
         this.articles = res.data.articles;
         this.isLoading = false;
@@ -299,7 +299,7 @@ export default {
     },
     getArticle(id) {
       this.isLoading = true;
-      const url = `${VITE_APP_URL}/api/${VITE_APP_PATH}/admin/article/${id}`;
+      const url = `${VITE_API_URL}/api/${VITE_API_PATH}/admin/article/${id}`;
       this.axios.get(url).then((res) => {
         this.isLoading = false;
         this.openModal(false, res.data.article);
@@ -331,11 +331,11 @@ export default {
     updateArticle(item) {
       this.isLoading = true;
       this.tempArticle = { ...item };
-      let url = `${VITE_APP_URL}/api/${VITE_APP_PATH}/admin/article`;
+      let url = `${VITE_API_URL}/api/${VITE_API_PATH}/admin/article`;
       let httpMethod = 'post';
       let status = '新增貼文';
       if (!this.isNew) {
-        url = `${VITE_APP_URL}/api/${VITE_APP_PATH}/admin/article/${this.tempArticle.id}`;
+        url = `${VITE_API_URL}/api/${VITE_API_PATH}/admin/article/${this.tempArticle.id}`;
         httpMethod = 'put';
         status = '更新貼文';
       }
@@ -365,7 +365,7 @@ export default {
     },
     delArticle() {
       this.isLoading = true;
-      const url = `${VITE_APP_URL}/api/${VITE_APP_PATH}/admin/article/${this.tempArticle.id}`;
+      const url = `${VITE_API_URL}/api/${VITE_API_PATH}/admin/article/${this.tempArticle.id}`;
       this.axios.delete(url).then((res) => {
         this.isLoading = false;
         this.addMessage({

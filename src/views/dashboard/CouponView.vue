@@ -250,7 +250,7 @@ import PageHeader from '@/components/PageHeader.vue';
 import CouponModal from '@/components/CouponModal.vue';
 import DelModal from '@/components/DelModal.vue';
 
-const { VITE_APP_URL, VITE_APP_PATH } = import.meta.env;
+const { VITE_API_URL, VITE_API_PATH } = import.meta.env;
 
 export default {
   components: {
@@ -332,7 +332,7 @@ export default {
     ...mapActions(useToastMessageStore, ['addMessage']),
     getCoupons() {
       this.isLoading = true;
-      this.axios.get(`${VITE_APP_URL}/api/${VITE_APP_PATH}/admin/coupons`)
+      this.axios.get(`${VITE_API_URL}/api/${VITE_API_PATH}/admin/coupons`)
         .then((res) => {
           this.coupons = res.data.coupons;
           this.isLoading = false;
@@ -372,7 +372,7 @@ export default {
     },
     updateCouponStatus(item) {
       this.isLoading = true;
-      const url = `${VITE_APP_URL}/api/${VITE_APP_PATH}/admin/coupon/${item.id}`;
+      const url = `${VITE_API_URL}/api/${VITE_API_PATH}/admin/coupon/${item.id}`;
       const data = {
         is_enabled: item.is_enabled,
       };
@@ -397,12 +397,12 @@ export default {
     },
     updateCoupon(tempCoupon) {
       this.isLoading = true;
-      let url = `${VITE_APP_URL}/api/${VITE_APP_PATH}/admin/coupon`;
+      let url = `${VITE_API_URL}/api/${VITE_API_PATH}/admin/coupon`;
       let httpMethods = 'post';
       let data = { ...tempCoupon };
 
       if (!this.isNew) {
-        url = `${VITE_APP_URL}/api/${VITE_APP_PATH}/admin/coupon/${tempCoupon.id}`;
+        url = `${VITE_API_URL}/api/${VITE_API_PATH}/admin/coupon/${tempCoupon.id}`;
         httpMethods = 'put';
         data = this.tempCoupon;
       }
@@ -428,7 +428,7 @@ export default {
     },
     deleteCoupon() {
       this.isLoading = true;
-      const url = `${VITE_APP_URL}/api/${VITE_APP_PATH}/admin/coupon/${this.tempCoupon.id}`;
+      const url = `${VITE_API_URL}/api/${VITE_API_PATH}/admin/coupon/${this.tempCoupon.id}`;
       this.axios.delete(url)
         .then((res) => {
           this.isLoading = false;

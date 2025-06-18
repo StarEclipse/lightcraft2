@@ -84,7 +84,7 @@ import { mapActions } from 'pinia';
 import useToastMessageStore from '@/stores/toastMessage';
 import ToastMessages from '@/components/ToastMessages.vue';
 
-const { VITE_APP_URL } = import.meta.env;
+const { VITE_API_URL } = import.meta.env;
 
 export default {
   data() {
@@ -166,7 +166,7 @@ export default {
     },
     checkLogin() {
       axios
-        .post(`${VITE_APP_URL}/api/user/check`)
+        .post(`${VITE_API_URL}/api/user/check`)
         .then((res) => {
           console.log(res.data.success);
           this.addMessage(
@@ -185,7 +185,7 @@ export default {
     },
     logout() {
       axios
-        .post(`${VITE_APP_URL}/logout`)
+        .post(`${VITE_API_URL}/logout`)
         .then(() => {
           this.$router.push('/login');
         })

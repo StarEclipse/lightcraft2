@@ -128,7 +128,7 @@ import { mapActions } from 'pinia';
 import useToastMessageStore from '@/stores/toastMessage';
 import HeroSection from '@/components/HeroSection.vue';
 
-const { VITE_APP_URL, VITE_APP_PATH } = import.meta.env;
+const { VITE_API_URL, VITE_API_PATH } = import.meta.env;
 
 export default {
   components: {
@@ -144,7 +144,7 @@ export default {
   methods: {
     ...mapActions(useToastMessageStore, ['addMessage']),
     getArticles(page = 1) {
-      const url = `${VITE_APP_URL}/api/${VITE_APP_PATH}/articles?page=${page}`;
+      const url = `${VITE_API_URL}/api/${VITE_API_PATH}/articles?page=${page}`;
       this.isLoading = true;
       this.axios(url)
         .then((res) => {
