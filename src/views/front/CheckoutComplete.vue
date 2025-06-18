@@ -3,7 +3,7 @@
     class="complete-page d-flex flex-column justify-content-center align-items-center text-center"
   >
     <Vue3Lottie
-      :animationData="completeAnimationData"
+      :animationData="completeAnimationDataRef"
       :height="150"
       :width="150"
       :loop="false"
@@ -28,41 +28,27 @@
   </div>
 </template>
 
-<script>
+<script setup>
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { Vue3Lottie } from 'vue3-lottie';
+import { ref, computed } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
 import completeAnimationData from '@/assets/lottie/checkout-complete.json';
 
-export default {
-  name: 'CheckoutComplete',
-  components: {
-    Vue3Lottie,
-  },
-  data() {
-    return {
-      completeAnimationData,
-    };
-  },
-  computed: {
-    orderId() {
-      return this.$route.params.orderId;
-    },
-    displayOrderId() {
-      return this.orderId || 'N/A';
-    },
-  },
-  methods: {
-    viewOrder() {
-      // 使用實際的訂單 ID 跳轉到訂單詳情頁面
-      if (this.orderId) {
-        this.$router.push(`/order/${this.orderId}`);
-      } else {
-        // 如果沒有訂單 ID，跳轉到首頁
-        this.$router.push('/');
-      }
-    },
-  },
-};
+const route = useRoute();
+const router = useRouter();
+
+const completeAnimationDataRef = ref(completeAnimationData);
+const orderId = computed(() => route.params.orderId);
+const displayOrderId = computed(() => orderId.value || 'N/A');
+
+function viewOrder() {
+  if (orderId.value) {
+    router.push(`/order/${orderId.value}`);
+  } else {
+    router.push('/');
+  }
+}
 </script>
 
 <style scoped>

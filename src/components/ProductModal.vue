@@ -320,7 +320,7 @@
           <button
             type="button"
             class="btn btn-primary"
-            @click="$emit('update-product', editProduct)"
+            @click="emit('update-product', editProduct)"
           >
             確認
           </button>
@@ -329,41 +329,79 @@
     </div>
   </div>
 </template>
-<script>
+<script setup>
+import {
+  ref,
+  reactive,
+  watch,
+  onMounted,
+} from 'vue';
 import axios from 'axios';
 import { mapActions } from 'pinia';
 import useToastMessageStore from '@/stores/toastMessage';
-
-import modalMixin from '@/mixins/modalMixin';
+import useModal from '@/composables/useModal';
 
 const { VITE_API_URL, VITE_API_PATH } = import.meta.env;
-export default {
-  data() {
-    return {
-      status: {},
-      modal: '',
-      editProduct: {
-        specifications: {
-          size: '',
-          weight: '',
-          material: '',
-          color: '',
-          origin: '',
-        },
-        star: 0,
-      },
-      isLoading: true,
-      hoverStar: 0, // 滑鼠懸停的星星數量
-    };
+
+const props = defineProps({
+  tempProduct: { type: Object, default: () => ({}) },
+  isNew: { type: Boolean, default: false },
+});
+
+const emit = defineEmits(['update', 'update-product']);
+
+const modal = ref(null);
+const fileInput = ref(null);
+const { openModal, closeModal } = useModal(modal);
+defineExpose({ openModal, closeModal });
+
+const status = reactive({});
+const editProduct = reactive({
+  specifications: {
+    size: '',
+    weight: '',
+    material: '',
+    color: '',
+    origin: '',
   },
-  props: ['tempProduct', 'isNew'],
-  emits: ['update', 'update-product'],
-  mixins: [modalMixin],
-  mounted() {
-    this.editProduct = this.tempProduct;
-    // 確保 specifications 物件存在
-    if (!this.editProduct.specifications) {
-      this.editProduct.specifications = {
+  star: 0,
+});
+const isLoading = ref(true);
+const hoverStar = ref(0);
+
+const { addMessage } = mapActions(useToastMessageStore, ['addMessage']);
+
+onMounted(() => {
+  Object.assign(editProduct, props.tempProduct);
+  if (!editProduct.specifications) {
+    editProduct.specifications = {
+      size: '',
+      weight: '',
+      material: '',
+      color: '',
+      origin: '',
+    };
+  }
+  if (typeof editProduct.star === 'undefined') {
+    editProduct.star = 0;
+  }
+});
+
+watch(
+  () => props.tempProduct,
+  () => {
+    Object.assign(editProduct, props.tempProduct);
+    if (!editProduct.imagesUrl) {
+      editProduct.imagesUrl = [];
+    }
+    if (!editProduct.imagesUrl.length) {
+      editProduct.imagesUrl.push('');
+    }
+    if (typeof editProduct.star === 'undefined') {
+      editProduct.star = 0;
+    }
+    if (!editProduct.specifications) {
+      editProduct.specifications = {
         size: '',
         weight: '',
         material: '',
@@ -371,79 +409,50 @@ export default {
         origin: '',
       };
     }
-    // 確保 star 欄位存在
-    if (typeof this.editProduct.star === 'undefined') {
-      this.editProduct.star = 0;
-    }
   },
-  watch: {
-    tempProduct() {
-      this.editProduct = this.tempProduct;
-      if (!this.editProduct.imagesUrl) {
-        this.editProduct.imagesUrl = [];
-      }
-      if (!this.editProduct.imagesUrl.length) {
-        this.editProduct.imagesUrl.push('');
-      }
-      // 確保 star 欄位存在
-      if (typeof this.editProduct.star === 'undefined') {
-        this.editProduct.star = 0;
-      }
-      // 確保 specifications 物件存在
-      if (!this.editProduct.specifications) {
-        this.editProduct.specifications = {
-          size: '',
-          weight: '',
-          material: '',
-          color: '',
-          origin: '',
-        };
-      }
-    },
-  },
-  methods: {
-    ...mapActions(useToastMessageStore, ['addMessage']),
-    // 設定星級評分
-    setStarRating(star) {
-      this.editProduct.star = star;
-    },
-    // 清除星級評分
-    clearStarRating() {
-      this.editProduct.star = 0;
-    },
-    upLoadFile() {
-      const upLoadFile = this.$refs.fileInput.files[0];
-      const formData = new FormData();
-      formData.append('file-to-upload', upLoadFile);
-      const url = `${VITE_API_URL}/api/${VITE_API_PATH}/admin/upload`;
-      this.status.fileUploading = true;
-      axios.post(url, formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
-      })
-        .then((res) => {
-          this.status.fileUploading = false;
-          this.editProduct.imageUrl = res.data.imageUrl;
-          this.$refs.fileInput.value = '';
-          this.isLoading = false;
-          this.addMessage({
-            title: '圖片上傳結果',
-            content: res.data.message,
-            style: 'success',
-          });
-        })
-        .catch((err) => {
-          this.status.fileUploading = false;
-          this.addMessage({
-            title: '圖片上傳結果',
-            content: err.response.data.message,
-            style: 'danger',
-          });
-        });
-    },
-  },
-};
+);
+
+function setStarRating(star) {
+  editProduct.star = star;
+}
+
+function clearStarRating() {
+  editProduct.star = 0;
+}
+
+function upLoadFile() {
+  const upFile = fileInput.value?.files[0];
+  if (!upFile) return;
+  const formData = new FormData();
+  formData.append('file-to-upload', upFile);
+  const url = `${VITE_API_URL}/api/${VITE_API_PATH}/admin/upload`;
+  status.fileUploading = true;
+  axios
+    .post(url, formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    })
+    .then((res) => {
+      status.fileUploading = false;
+      editProduct.imageUrl = res.data.imageUrl;
+      if (fileInput.value) fileInput.value.value = '';
+      isLoading.value = false;
+      addMessage({
+        title: '圖片上傳結果',
+        content: res.data.message,
+        style: 'success',
+      });
+    })
+    .catch((err) => {
+      status.fileUploading = false;
+      addMessage({
+        title: '圖片上傳結果',
+        content: err.response.data.message,
+        style: 'danger',
+      });
+    });
+}
 </script>
 
 <style scoped>

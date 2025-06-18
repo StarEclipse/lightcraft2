@@ -216,7 +216,11 @@
   ></DelModal>
 </template>
 
-<script>
+<script setup>
+import {
+  ref, reactive, computed, onMounted,
+} from 'vue';
+import axios from 'axios';
 import { mapActions } from 'pinia';
 import useToastMessageStore from '@/stores/toastMessage';
 import ArticleModal from '@/components/ArticleModal.vue';
@@ -225,170 +229,172 @@ import PageHeader from '@/components/PageHeader.vue';
 
 const { VITE_API_URL, VITE_API_PATH } = import.meta.env;
 
-export default {
-  components: {
-    DelModal,
-    ArticleModal,
-    PageHeader,
-  },
-  data() {
-    return {
-      articles: [],
-      currentPage: 1,
-      isLoading: false,
-      isNew: false,
-      tempArticle: {},
-    };
-  },
-  computed: {
-    articleStats() {
-      const stats = {
-        total: this.articles.length,
-        published: 0,
-        drafts: 0,
-        thisMonth: 0,
-      };
+const articleModal = ref(null);
+const delModal = ref(null);
 
-      const currentMonth = new Date().getMonth();
-      const currentYear = new Date().getFullYear();
+const articles = ref([]);
+const currentPage = ref(1);
+const isLoading = ref(false);
+const isNew = ref(false);
+const tempArticle = reactive({});
 
-      this.articles.forEach((article) => {
-        // 統計發布狀態
-        if (article.isPublic) {
-          stats.published += 1;
-        } else {
-          stats.drafts += 1;
-        }
+const { addMessage } = mapActions(useToastMessageStore, ['addMessage']);
 
-        // 統計本月新增
-        const articleDate = new Date(article.create_at * 1000);
-        if (
-          articleDate.getMonth() === currentMonth
-          && articleDate.getFullYear() === currentYear
-        ) {
-          stats.thisMonth += 1;
-        }
+const articleStats = computed(() => {
+  const stats = {
+    total: articles.value.length,
+    published: 0,
+    drafts: 0,
+    thisMonth: 0,
+  };
+
+  const currentMonth = new Date().getMonth();
+  const currentYear = new Date().getFullYear();
+
+  articles.value.forEach((article) => {
+    if (article.isPublic) {
+      stats.published += 1;
+    } else {
+      stats.drafts += 1;
+    }
+
+    const articleDate = new Date(article.create_at * 1000);
+    if (
+      articleDate.getMonth() === currentMonth
+      && articleDate.getFullYear() === currentYear
+    ) {
+      stats.thisMonth += 1;
+    }
+  });
+
+  return stats;
+});
+
+function getArticles(page = 1) {
+  currentPage.value = page;
+  isLoading.value = true;
+  const url = `${VITE_API_URL}/api/${VITE_API_PATH}/admin/articles?page=${page}`;
+  axios
+    .get(url)
+    .then((res) => {
+      articles.value = res.data.articles;
+      isLoading.value = false;
+      addMessage({
+        title: '取得文章成功',
+        content: `共有${res.data.articles.length}篇文章`,
+        style: 'success',
       });
-
-      return stats;
-    },
-  },
-  methods: {
-    ...mapActions(useToastMessageStore, ['addMessage']),
-    getArticles(page = 1) {
-      this.currentPage = page;
-      this.isLoading = true;
-      const url = `${VITE_API_URL}/api/${VITE_API_PATH}/admin/articles?page=${page}`;
-      this.axios.get(url).then((res) => {
-        this.articles = res.data.articles;
-        this.isLoading = false;
-        this.addMessage({
-          title: '取得文章成功',
-          content: `共有${res.data.articles.length}篇文章`,
-          style: 'success',
-        });
-      })
-        .catch((err) => {
-          this.isLoading = false;
-          this.addMessage({
-            title: '取得文章失敗',
-            content: err.response.data.message,
-            style: 'danger',
-          });
-        });
-    },
-    getArticle(id) {
-      this.isLoading = true;
-      const url = `${VITE_API_URL}/api/${VITE_API_PATH}/admin/article/${id}`;
-      this.axios.get(url).then((res) => {
-        this.isLoading = false;
-        this.openModal(false, res.data.article);
-        this.isNew = false;
-      })
-        .catch((err) => {
-          this.isLoading = false;
-          this.addMessage({
-            title: '取得文章失敗',
-            content: err.response.data.message,
-            style: 'danger',
-          });
-        });
-    },
-    openModal(isNew, item) {
-      if (isNew) {
-        this.tempArticle = {
-          create_at: new Date().getTime() / 1000,
-          tag: [''],
-          isPublic: false,
-        };
-        this.isNew = true;
-      } else {
-        this.tempArticle = { ...item };
-        this.isNew = false;
-      }
-      this.$refs.articleModal.openModal();
-    },
-    updateArticle(item) {
-      this.isLoading = true;
-      this.tempArticle = { ...item };
-      let url = `${VITE_API_URL}/api/${VITE_API_PATH}/admin/article`;
-      let httpMethod = 'post';
-      let status = '新增貼文';
-      if (!this.isNew) {
-        url = `${VITE_API_URL}/api/${VITE_API_PATH}/admin/article/${this.tempArticle.id}`;
-        httpMethod = 'put';
-        status = '更新貼文';
-      }
-      this.axios[httpMethod](url, { data: this.tempArticle })
-        .then((res) => {
-          this.isLoading = false;
-          this.addMessage({
-            title: status,
-            content: res.data.message,
-            style: 'success',
-          });
-          this.getArticles(this.currentPage);
-          this.$refs.articleModal.closeModal();
-        })
-        .catch((err) => {
-          this.isLoading = false;
-          this.addMessage({
-            title: status,
-            content: err.response.data.message,
-            style: 'danger',
-          });
-        });
-    },
-    openDelArticleModal(item) {
-      this.tempArticle = { ...item };
-      this.$refs.delModal.openModal();
-    },
-    delArticle() {
-      this.isLoading = true;
-      const url = `${VITE_API_URL}/api/${VITE_API_PATH}/admin/article/${this.tempArticle.id}`;
-      this.axios.delete(url).then((res) => {
-        this.isLoading = false;
-        this.addMessage({
-          title: '刪除貼文',
-          content: res.data.message,
-          style: 'success',
-        });
-        this.getArticles(this.currentPage);
-        this.$refs.delModal.closeModal();
-      }).catch((err) => {
-        this.isLoading = false;
-        this.addMessage({
-          title: '刪除貼文',
-          content: err.response.data.message,
-          style: 'danger',
-        });
+    })
+    .catch((err) => {
+      isLoading.value = false;
+      addMessage({
+        title: '取得文章失敗',
+        content: err.response.data.message,
+        style: 'danger',
       });
-    },
-  },
-  mounted() {
-    this.getArticles();
-  },
-};
+    });
+}
+
+function openModal(newFlag, item) {
+  if (newFlag) {
+    Object.assign(tempArticle, {
+      create_at: new Date().getTime() / 1000,
+      tag: [''],
+      isPublic: false,
+    });
+    isNew.value = true;
+  } else {
+    Object.assign(tempArticle, item);
+    isNew.value = false;
+  }
+  articleModal.value?.openModal();
+}
+
+function getArticle(id) {
+  isLoading.value = true;
+  const url = `${VITE_API_URL}/api/${VITE_API_PATH}/admin/article/${id}`;
+  axios
+    .get(url)
+    .then((res) => {
+      isLoading.value = false;
+      openModal(false, res.data.article);
+      isNew.value = false;
+    })
+    .catch((err) => {
+      isLoading.value = false;
+      addMessage({
+        title: '取得文章失敗',
+        content: err.response.data.message,
+        style: 'danger',
+      });
+    });
+}
+
+function updateArticle(item) {
+  isLoading.value = true;
+  Object.assign(tempArticle, item);
+  let url = `${VITE_API_URL}/api/${VITE_API_PATH}/admin/article`;
+  let httpMethod = 'post';
+  let status = '新增貼文';
+  if (!isNew.value) {
+    url = `${VITE_API_URL}/api/${VITE_API_PATH}/admin/article/${tempArticle.id}`;
+    httpMethod = 'put';
+    status = '更新貼文';
+  }
+  axios[httpMethod](url, { data: tempArticle })
+    .then((res) => {
+      isLoading.value = false;
+      addMessage({
+        title: status,
+        content: res.data.message,
+        style: 'success',
+      });
+      getArticles(currentPage.value);
+      articleModal.value?.closeModal();
+    })
+    .catch((err) => {
+      isLoading.value = false;
+      addMessage({
+        title: status,
+        content: err.response.data.message,
+        style: 'danger',
+      });
+    });
+}
+
+function openDelArticleModal(item) {
+  Object.assign(tempArticle, item);
+  delModal.value?.openModal();
+}
+
+function delArticle() {
+  isLoading.value = true;
+  const url = `${VITE_API_URL}/api/${VITE_API_PATH}/admin/article/${tempArticle.id}`;
+  axios
+    .delete(url)
+    .then((res) => {
+      isLoading.value = false;
+      addMessage({
+        title: '刪除貼文',
+        content: res.data.message,
+        style: 'success',
+      });
+      getArticles(currentPage.value);
+      delModal.value?.closeModal();
+    })
+    .catch((err) => {
+      isLoading.value = false;
+      addMessage({
+        title: '刪除貼文',
+        content: err.response.data.message,
+        style: 'danger',
+      });
+    });
+}
+
+onMounted(() => {
+  getArticles();
+});
 </script>
 
 <style scoped>
