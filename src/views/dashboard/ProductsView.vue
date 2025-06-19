@@ -117,112 +117,113 @@
   ></DeleteModal>
 </template>
 
-<script>
+<script setup>
+import { ref, onMounted } from 'vue';
 import axios from 'axios';
-import { mapActions } from 'pinia';
 import useToastMessageStore from '@/stores/toastMessage';
 import { currency } from '@/methods/filters';
 
 import PageHeader from '@/components/PageHeader.vue';
-import ProductModal from '../../components/ProductModal.vue';
-import DeleteModal from '../../components/DeleteModal.vue';
-import PaginationComponent from '../../components/PaginationComponent.vue';
+import ProductModal from '@/components/ProductModal.vue';
+import DeleteModal from '@/components/DeleteModal.vue';
+import PaginationComponent from '@/components/PaginationComponent.vue';
 
 const { VITE_API_URL, VITE_API_PATH } = import.meta.env;
 
-export default {
-  data() {
-    return {
-      // 產品資料格式
-      products: [],
-      isNew: false,
-      tempProduct: {
-        imagesUrl: [],
-      },
-      pagination: {},
-      isLoading: false,
-    };
-  },
-  methods: {
-    ...mapActions(useToastMessageStore, ['addMessage']),
-    formatCurrency(num) {
-      return currency(num);
-    },
-    getProducts(page = 1) {
-      this.isLoading = true;
-      axios
-        .get(`${VITE_API_URL}/api/${VITE_API_PATH}/admin/products?page=${page}`)
-        .then((res) => {
-          const { products, pagination } = res.data;
-          this.products = products;
-          this.pagination = pagination;
-          this.isLoading = false;
-        })
-        .catch((err) => {
-          this.isLoading = false;
-          this.addMessage({
-            title: '取得產品資訊失敗',
-            content: err.response.data.message,
-            style: 'danger',
-          });
-        });
-    },
-    openModal(status, item) {
-      if (status === 'new') {
-        this.tempProduct = {
-          imagesUrl: [],
-        };
-        this.isNew = true;
-        this.$refs.productModal.openModal();
-      } else if (status === 'edit') {
-        this.tempProduct = { ...item };
-        this.isNew = false;
-        this.$refs.productModal.openModal();
-      } else if (status === 'delete') {
-        this.tempProduct = { ...item };
-        this.$refs.deleteModal.openModal();
-      }
-    },
-    updateProduct(item) {
-      this.isLoading = true;
-      let url = `${VITE_API_URL}/api/${VITE_API_PATH}/admin/product/${this.tempProduct.id}`;
-      let http = 'put';
+const toastMessageStore = useToastMessageStore();
+const { addMessage } = toastMessageStore;
 
-      if (this.isNew) {
-        url = `${VITE_API_URL}/api/${VITE_API_PATH}/admin/product`;
-        http = 'post';
-      }
-      axios[http](url, { data: item })
-        .then((res) => {
-          this.isLoading = false;
-          this.getProducts();
-          this.$refs.productModal.closeModal();
-          this.addMessage({
-            title: '成功更新產品',
-            content: res.data.message,
-            style: 'success',
-          });
-        })
-        .catch((err) => {
-          this.isLoading = false;
-          this.addMessage({
-            title: '更新產品失敗',
-            content: err.response.data.message,
-            style: 'danger',
-          });
-        });
-    },
-  },
-  mounted() {
-    this.getProducts();
-  },
-  components: {
-    PageHeader,
-    ProductModal,
-    DeleteModal,
-    PaginationComponent,
-  },
+const products = ref([]);
+const isNew = ref(false);
+const tempProduct = ref({
+  imagesUrl: [],
+});
+const pagination = ref({});
+const isLoading = ref(false);
+
+const productModal = ref(null);
+const deleteModal = ref(null);
+
+const formatCurrency = (num) => currency(num);
+
+const getProducts = (page = 1) => {
+  isLoading.value = true;
+  axios
+    .get(`${VITE_API_URL}/api/${VITE_API_PATH}/admin/products?page=${page}`)
+    .then((res) => {
+      const { products: fetchedProducts, pagination: fetchedPagination } = res.data;
+      products.value = fetchedProducts;
+      pagination.value = fetchedPagination;
+      isLoading.value = false;
+    })
+    .catch((err) => {
+      isLoading.value = false;
+      addMessage({
+        title: '取得產品資訊失敗',
+        content: err.response.data.message,
+        style: 'danger',
+      });
+    });
 };
+
+const openModal = (status, item) => {
+  if (status === 'new') {
+    tempProduct.value = {
+      imagesUrl: [],
+      star: 0,
+      specifications: {
+        size: '',
+        weight: '',
+        material: '',
+        color: '',
+        origin: '',
+      },
+    };
+    isNew.value = true;
+    productModal.value.openModal();
+  } else if (status === 'edit') {
+    tempProduct.value = { ...item };
+    isNew.value = false;
+    productModal.value.openModal();
+  } else if (status === 'delete') {
+    tempProduct.value = { ...item };
+    deleteModal.value.openModal();
+  }
+};
+
+const updateProduct = (item) => {
+  isLoading.value = true;
+  let url = `${VITE_API_URL}/api/${VITE_API_PATH}/admin/product/${tempProduct.value.id}`;
+  let http = 'put';
+
+  if (isNew.value) {
+    url = `${VITE_API_URL}/api/${VITE_API_PATH}/admin/product`;
+    http = 'post';
+  }
+  axios[http](url, { data: item })
+    .then((res) => {
+      isLoading.value = false;
+      getProducts();
+      productModal.value.closeModal();
+      addMessage({
+        title: isNew.value ? '產品建立成功' : '產品更新成功',
+        content: res.data.message,
+        style: 'success',
+      });
+    })
+    .catch((err) => {
+      isLoading.value = false;
+      addMessage({
+        title: isNew.value ? '產品建立失敗' : '產品更新失敗',
+        content: err.response.data.message,
+        style: 'danger',
+      });
+    });
+};
+
+onMounted(() => {
+  getProducts();
+});
 </script>
 
 <style scoped>

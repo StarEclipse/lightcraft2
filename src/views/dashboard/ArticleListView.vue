@@ -221,7 +221,6 @@ import {
   ref, reactive, computed, onMounted,
 } from 'vue';
 import axios from 'axios';
-import { mapActions } from 'pinia';
 import useToastMessageStore from '@/stores/toastMessage';
 import ArticleModal from '@/components/ArticleModal.vue';
 import DelModal from '@/components/DelModal.vue';
@@ -233,12 +232,12 @@ const articleModal = ref(null);
 const delModal = ref(null);
 
 const articles = ref([]);
-const currentPage = ref(1);
 const isLoading = ref(false);
 const isNew = ref(false);
 const tempArticle = reactive({});
 
-const { addMessage } = mapActions(useToastMessageStore, ['addMessage']);
+const toastMessageStore = useToastMessageStore();
+const { addMessage } = toastMessageStore;
 
 const articleStats = computed(() => {
   const stats = {
@@ -271,7 +270,6 @@ const articleStats = computed(() => {
 });
 
 function getArticles(page = 1) {
-  currentPage.value = page;
   isLoading.value = true;
   const url = `${VITE_API_URL}/api/${VITE_API_PATH}/admin/articles?page=${page}`;
   axios
@@ -279,11 +277,6 @@ function getArticles(page = 1) {
     .then((res) => {
       articles.value = res.data.articles;
       isLoading.value = false;
-      addMessage({
-        title: '取得文章成功',
-        content: `共有${res.data.articles.length}篇文章`,
-        style: 'success',
-      });
     })
     .catch((err) => {
       isLoading.value = false;
@@ -293,21 +286,6 @@ function getArticles(page = 1) {
         style: 'danger',
       });
     });
-}
-
-function openModal(newFlag, item) {
-  if (newFlag) {
-    Object.assign(tempArticle, {
-      create_at: new Date().getTime() / 1000,
-      tag: [''],
-      isPublic: false,
-    });
-    isNew.value = true;
-  } else {
-    Object.assign(tempArticle, item);
-    isNew.value = false;
-  }
-  articleModal.value?.openModal();
 }
 
 function getArticle(id) {
@@ -316,9 +294,10 @@ function getArticle(id) {
   axios
     .get(url)
     .then((res) => {
-      isLoading.value = false;
-      openModal(false, res.data.article);
+      Object.assign(tempArticle, res.data.article);
       isNew.value = false;
+      articleModal.value.openModal();
+      isLoading.value = false;
     })
     .catch((err) => {
       isLoading.value = false;
@@ -330,41 +309,53 @@ function getArticle(id) {
     });
 }
 
-function updateArticle(item) {
-  isLoading.value = true;
-  Object.assign(tempArticle, item);
-  let url = `${VITE_API_URL}/api/${VITE_API_PATH}/admin/article`;
-  let httpMethod = 'post';
-  let status = '新增貼文';
-  if (!isNew.value) {
-    url = `${VITE_API_URL}/api/${VITE_API_PATH}/admin/article/${tempArticle.id}`;
-    httpMethod = 'put';
-    status = '更新貼文';
-  }
-  axios[httpMethod](url, { data: tempArticle })
-    .then((res) => {
-      isLoading.value = false;
-      addMessage({
-        title: status,
-        content: res.data.message,
-        style: 'success',
-      });
-      getArticles(currentPage.value);
-      articleModal.value?.closeModal();
-    })
-    .catch((err) => {
-      isLoading.value = false;
-      addMessage({
-        title: status,
-        content: err.response.data.message,
-        style: 'danger',
-      });
+function openModal(isNewStatus, item) {
+  isNew.value = isNewStatus;
+  if (isNew.value) {
+    Object.assign(tempArticle, {
+      isPublic: false,
+      create_at: new Date().getTime() / 1000,
+      tag: [],
     });
+  } else {
+    getArticle(item.id);
+  }
+  articleModal.value.openModal();
 }
 
 function openDelArticleModal(item) {
   Object.assign(tempArticle, item);
-  delModal.value?.openModal();
+  delModal.value.openModal();
+}
+
+function updateArticle(item) {
+  isLoading.value = true;
+  let url = `${VITE_API_URL}/api/${VITE_API_PATH}/admin/article`;
+  let http = 'post';
+  if (!isNew.value) {
+    url = `${VITE_API_URL}/api/${VITE_API_PATH}/admin/article/${item.id}`;
+    http = 'put';
+  }
+
+  axios[http](url, { data: item })
+    .then((res) => {
+      isLoading.value = false;
+      addMessage({
+        title: '文章更新成功',
+        content: res.data.message,
+        style: 'success',
+      });
+      articleModal.value.closeModal();
+      getArticles();
+    })
+    .catch((err) => {
+      isLoading.value = false;
+      addMessage({
+        title: '文章更新失敗',
+        content: err.response.data.message,
+        style: 'danger',
+      });
+    });
 }
 
 function delArticle() {
@@ -375,17 +366,17 @@ function delArticle() {
     .then((res) => {
       isLoading.value = false;
       addMessage({
-        title: '刪除貼文',
+        title: '文章刪除成功',
         content: res.data.message,
         style: 'success',
       });
-      getArticles(currentPage.value);
-      delModal.value?.closeModal();
+      delModal.value.closeModal();
+      getArticles();
     })
     .catch((err) => {
       isLoading.value = false;
       addMessage({
-        title: '刪除貼文',
+        title: '文章刪除失敗',
         content: err.response.data.message,
         style: 'danger',
       });
